@@ -120,3 +120,32 @@ test('recording heartbeat renews while the panel is present', async () => {
   }
   dom.window.close();
 });
+test('picker can be cancelled without retaining its overlay', async () => {
+  const { dom, w, send } = harness();
+  const initial = w.document.documentElement.children.length;
+  await send({ type: 'PICK_START' });
+  assert.equal(w.document.documentElement.children.length, initial + 1);
+  await send({ type: 'CANCEL' });
+  assert.equal(w.document.documentElement.children.length, initial);
+  assert.equal((await send({ type: 'PICK_POLL' })).result.cancelled, true);
+  dom.window.close();
+});
+test('picker ignores page-generated click events', async () => {
+  const { dom, w, send } = harness();
+  await send({ type: 'PICK_START' });
+  w.document
+    .querySelector('#name')
+    .dispatchEvent(
+      new w.MouseEvent('click', { bubbles: true, cancelable: true }),
+    );
+  assert.equal((await send({ type: 'PICK_POLL' })).result, null);
+  await send({ type: 'CANCEL' });
+  dom.window.close();
+});
+test('target lookup stops if the URL changes while waiting', async () => {
+  const { dom, w, execute } = harness();
+  const pending = execute({ type: 'click', selector: '#not-yet-present' });
+  w.history.pushState({}, '', '/changed');
+  assert.match((await pending).error, /Page changed/);
+  dom.window.close();
+});

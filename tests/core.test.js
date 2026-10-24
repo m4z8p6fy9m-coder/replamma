@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import '../extension/core.js';
 const { validate, samePage, webUrl } = globalThis.ReplayCore;
+const { variables, resolveVariables } = globalThis.ReplayCore;
 const flow = (steps = []) => ({
   schemaVersion: 1,
   name: 'Example',
@@ -75,4 +76,41 @@ test('pins origin, pathname and query; permits fragment changes', () => {
     'https://a.test/x?q=2',
   ])
     assert.equal(samePage('https://a.test/x?q=1', url), false);
+});
+test('variables resolve once, preserve templates and reject missing values', () => {
+  const original = flow([
+    { type: 'input', selector: '#name', value: 'Hello {{name}} / {{name}}' },
+  ]);
+  assert.deepEqual(variables(original), ['name']);
+  assert.equal(
+    resolveVariables(original, { name: 'A $& {{nested}}' }).steps[0].value,
+    'Hello A $& {{nested}} / A $& {{nested}}',
+  );
+  assert.equal(original.steps[0].value, 'Hello {{name}} / {{name}}');
+  assert.throws(() => resolveVariables(original, {}), /Enter a value for name/);
+});
+test('variables enforce expansion and parameter count bounds', () => {
+  assert.throws(() =>
+    resolveVariables(
+      flow([{ type: 'input', selector: '#x', value: '{{x}}{{x}}' }]),
+      { x: 'x'.repeat(6000) },
+    ),
+  );
+  assert.throws(() =>
+    variables(
+      flow([
+        {
+          type: 'input',
+          selector: '#x',
+          value: Array.from({ length: 21 }, (_, i) => '{{x' + i + '}}').join(
+            '',
+          ),
+        },
+      ]),
+    ),
+  );
+  assert.deepEqual(
+    variables(flow([{ type: 'click', selector: '[name="{{literal}}"]' }])),
+    [],
+  );
 });
