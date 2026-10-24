@@ -1,4 +1,4 @@
-# Contributing to Replay
+# Contributing to Replamma
 
 Thanks for helping make repetitive browser work easier.
 

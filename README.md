@@ -1,90 +1,86 @@
-<div align="center">
+<p><img src="extension/icons/mark.svg" width="52" height="58" alt="Replamma llama"></p>
 
-# ↻ Replay
+# Replamma
 
-### Do it once. Make it a workflow.
+A local browser workflow recorder for desktop Chrome. Record a task, review its steps, and run it again with fresh inputs.
 
-Record browser actions, edit the steps, and replay them with a human in control.
+**Version 0.2.0 · Chrome 116+ · No account or backend**
 
-**Local storage · No account · No runtime dependencies · Manifest V3**
+This repository is access-restricted. The previously released Replay 0.1 code remains part of its history. Existing workflow JSON and local workflow storage remain compatible.
 
-[Get started](#get-started) · [Try the playground](#try-the-playground) · [How it works](docs/ARCHITECTURE.md) · [Contribute](CONTRIBUTING.md) · [Roadmap](docs/ROADMAP.md)
+## Install
 
-![Replay workflow studio](docs/studio.png)
+1. Download and extract the extension package from the repository's releases, or use the source folder.
+2. Open `chrome://extensions` and turn on **Developer mode**.
+3. Select **Load unpacked**, then the folder containing `manifest.json` — `extension/` when using the source.
+4. Pin Replamma in Chrome's Extensions menu.
+5. Open a normal HTTP(S) page and click Replamma's toolbar icon to grant temporary access.
+6. Choose **New workflow**, enter a name, and press **Record**. Perform your task, then **Stop** and **Save workflow**.
+7. Reset the page before running it. Each replayed click waits for your approval.
 
-</div>
+Replamma supports the main document on a single page. Keep the side panel open during recording and playback. Reload the extension and the target page after an update. Chrome may assign a new extension ID when loading from a different directory; export important workflows before switching directories.
 
-## A small tool for the work you repeat
+## Interface
 
-Entering report filters. Filling the same internal form. Repeating a sequence of clicks. Replay turns those interactions into an inspectable workflow you can keep in your browser or export as JSON.
+<img src="docs/studio.png" width="440" alt="Replamma workflow editor">
 
-**v0.1.0 is an early release for single-page workflows.** It is a deterministic recorder, not an AI agent. Browser automation depends on the page: test a workflow on harmless data before using it for real work.
+The panel opens with your workflow library. Search by name or website, open an existing workflow, or duplicate it to create a variation. Technical selectors are tucked into **Target settings**; ordinary input values remain directly editable.
 
-## What works today
+## Features
 
-| Feature     | Behavior                                                                   |
-| ----------- | -------------------------------------------------------------------------- |
-| Record      | Clicks on actionable elements, text inputs, textareas, native selects      |
-| Edit        | Change selectors and values, reorder or remove steps, insert bounded waits |
-| Replay      | Wait up to five seconds for a unique target, then perform the action       |
-| Approval    | Every replayed click pauses for explicit approval in the panel             |
-| Stop        | Cancel playback, including a pending target lookup or wait                 |
-| Library     | Save, reopen and delete workflows in the current browser profile           |
-| Portability | Import validated JSON; export readable, versioned JSON                     |
-| Privacy     | No telemetry, account, remote service, or persistent site access           |
+| Feature                 | What it does                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Record and edit         | Capture actionable clicks, native text fields and single-choice selects. Reorder, remove and edit steps.                       |
+| Visual target selection | Open **Target settings → Choose on page**, then click a replacement target. The selected click is intercepted. Escape cancels. |
+| Input variables         | Put `{{report}}` into a step value. Supply a fresh value before running; the template stays unchanged.                         |
+| Local activity          | Inspect the latest 50 run outcomes, durations and completed-step counts. Clear them in Activity.                               |
+| Search and duplicate    | Find a saved workflow by name or host and create a variation without replacing the original.                                   |
+| Approval and stop       | Every replayed click requires approval. Stop cancels playback, pending target lookup and picker mode.                          |
+| JSON files              | Import validated version-1 workflows through **Settings → Import JSON**. Export from the editor.                               |
+| Local storage           | No account, telemetry, remote scripts, model provider or developer-operated service.                                           |
 
-## Get started
+Run inputs are not saved to workflow files or activity. Concrete values captured while recording are saved as part of the workflow, so review them. Activity stores the workflow name, time, outcome, counts and duration; it does not store URLs, selectors, resolved values or error text.
 
-Requires desktop **Chrome 116+**. Chromium-based browsers with the same extension APIs may work but are not the compatibility target for this release. No Node.js or build step is needed to use Replay.
+## Try it locally
 
-1. Clone this repository, or download and extract its source ZIP.
-2. Open `chrome://extensions` and enable **Developer mode**.
-3. Choose **Load unpacked** and select the repository's **`extension/`** folder.
-4. Pin Replay using Chrome's Extensions menu.
-5. Open a normal HTTP(S) website and click Replay's toolbar icon. This grants temporary access to that tab and opens the workflow studio.
-6. Name your workflow, click **Record page**, and perform a few actions on the website.
-7. Keep the side panel open. Click **Stop**, inspect the steps, and **Save workflow**.
-8. Reset the page to its initial state, click Replay's icon again if needed, and choose **Run**. Approve each click as it comes up.
-
-Replay never automatically opens the starting URL. Navigate there yourself. A workflow is pinned to its starting origin, path, and query string. Fragment changes are allowed during replay.
-
-## Try the playground
-
-With Node.js 22 or later:
+With Node.js 22 or newer:
 
 ```sh
 npm run demo
 ```
 
-Open **http://127.0.0.1:4173**, click Replay's toolbar icon, and record entering a report name, selecting JSON, and clicking **Create report**. Stop and save. Reload the playground, then run the workflow. The final result should show the same report name and format. The playground does not send form data anywhere.
+Open **http://127.0.0.1:4173**, click the Replamma toolbar icon and record entering a report name, choosing a format and clicking **Create report**. Stop and save. Reload the playground and run the workflow. The local demo does not send form data anywhere.
 
-## Privacy and permissions
+To try variables, change the report-name step's value to `{{report}}`. Fill **Inputs for this run → report**, then run it. The saved workflow retains its placeholder.
 
-Replay requests `activeTab`, `scripting`, `storage`, and `sidePanel`. It does not request `<all_urls>`, browsing history, cookies, or persistent host permissions. See [Chrome's activeTab documentation](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab).
+## Permissions and privacy
 
-- Recording runs in Chrome's isolated content-script world on the selected page.
-- Saved workflows and the latest recording draft use `chrome.storage.local`, not cloud sync. This storage is **not encrypted by Replay**.
-- Password fields, recognizable sensitive field names, and elements inside `[data-replay-private]` are skipped during capture and blocked during playback.
-- This heuristic is not a personal-data detector. Ordinary fields, element labels, selectors, and URLs can still contain personal information. Review every workflow before saving or exporting it.
-- Typing into a page can trigger that site's own network requests, even before a click. Click approval is not a network sandbox.
-- JSON imports cannot introduce executable code. Imported selectors and values can still cause consequential actions when run. Inspect them first.
+Replamma requests `activeTab`, `scripting`, `storage`, and `sidePanel`. It does not request persistent host permissions, history or cookies. Chrome grants temporary access when you invoke the extension. See [Chrome's activeTab documentation](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab).
 
-Read the [privacy policy](docs/PRIVACY.md) and [security policy](SECURITY.md) for details.
+- Storage stays in the current browser profile and is not encrypted by Replamma.
+- Passwords, recognizable sensitive field names and elements inside `[data-replay-private]` are excluded by a heuristic, not a general personal-data detector.
+- The website can observe entered values and make its own network requests. Click approval does not sandbox those effects.
+- Imported workflows cannot contain executable actions, but selectors and values still require inspection.
+- Interface labels cannot normally be selected and copied. Editable fields retain standard selection. This is an interaction choice, not DRM or a guarantee against inspecting installed JavaScript.
+- Repository privacy restricts who can access the hosted source. It cannot recall previously distributed copies or prevent extraction from an installed browser extension.
 
-## Current boundaries
+Read [Privacy](docs/PRIVACY.md) and [Security](SECURITY.md) before using real data.
 
-This release supports the **top-level DOM on one page**. Recording ends or is interrupted when the page navigates or reloads. The last polled recording draft is preserved; actions in the final polling interval may be lost. Recording stops capturing if the URL changes, including its fragment. Replay checks origin, path and query before each action.
+## Current limits
 
-Not supported yet: cross-page workflows, tabs/popups, iframes, shadow DOM, contenteditable editors, file uploads, keyboard shortcuts, drag-and-drop, multi-select lists, canvas controls, extraction, loops, scheduling, variable substitution, AI editing, and cloud execution. A site that requires trusted events may reject synthetic playback. Downloads depend on the site's existing click behavior; Replay does not manage download files.
+One HTTP(S) page, top-level DOM, at most 250 steps. The run is bound to its starting origin, path and query; URL fragments may change during replay. Capture stops if the URL changes, including its fragment. Navigation destroys in-memory capture, so the final polling interval may be lost.
 
-Closing the panel interrupts playback. Recording requires a heartbeat from the open panel and expires after two seconds without one; browser suspension or background throttling can also end capture. Reopen Replay to recover the last valid recording draft. Editor changes are saved by **Save workflow**; the recording draft is periodically persisted while recording.
+Recording expires after two seconds without a panel heartbeat. A suspended panel can therefore end capture. The picker expires after 30 seconds. Closing the panel interrupts playback.
+
+Not supported: cross-page workflows, popups, iframes, shadow DOM, contenteditable, uploads, keyboard shortcuts, drag-and-drop, native multi-selects, extraction, loops, scheduling or AI editing. Some sites reject synthetic playback events. Downloads rely on the site's own click behavior.
 
 ## Development
 
-The extension itself uses plain JavaScript, HTML, and CSS. Development dependencies are only for testing.
+The extension has no runtime dependencies and needs no build step. Test tooling uses npm:
 
 ```sh
 npm ci
+npm run format:check
 npm run check
 npm test
 npx playwright install chromium
@@ -92,33 +88,12 @@ npm run test:e2e
 npm run package
 ```
 
-`package` copies the installable extension into `dist/replay/`. Reload the extension in `chrome://extensions` after code changes, then reload the target page to remove older injected scripts.
+The package script writes an unpacked extension to `dist/replamma/`. Use `npm run icons` to render the toolbar PNGs from the original SVG llama mark.
 
-The browser integration test loads the extension into an isolated Chromium profile, records trusted interactions on the local playground, verifies sensitive-field exclusion, replays the workflow, and checks click approval, cancellation, persistence, and JSON export. A temporary copy of the manifest grants access to loopback pages because the test cannot invoke Chrome's toolbar action. The shipped manifest has no host permissions; manual verification of the toolbar/side-panel permission flow remains necessary. The test also produces the screenshot used above.
+Integration tests use an isolated Chromium profile and a temporary manifest that grants loopback access; this lets tests exercise extension APIs without a physical toolbar click. The shipped manifest has no host permissions. Manual validation of the real toolbar and side-panel permission flow remains necessary.
 
-## Workflow format
+## Documentation
 
-```json
-{
-  "schemaVersion": 1,
-  "name": "Fill report name",
-  "url": "http://127.0.0.1:4173/",
-  "steps": [
-    {
-      "type": "input",
-      "selector": "[id=report-name]",
-      "label": "Report name",
-      "value": "Weekly overview"
-    },
-    { "type": "wait", "ms": 500 }
-  ]
-}
-```
+[Architecture](docs/ARCHITECTURE.md) · [Workflow format](docs/WORKFLOWS.md) · [Design notes](docs/DESIGN.md) · [Roadmap](docs/ROADMAP.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
 
-See [the format reference](docs/WORKFLOWS.md) for validation rules and examples.
-
-## Contributing and license
-
-Small, testable contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and check the [roadmap](docs/ROADMAP.md). Security reports should follow [SECURITY.md](SECURITY.md).
-
-Released under the [MIT License](LICENSE). No claims of affiliation with Google or other browser vendors.
+The MIT source license is retained in [LICENSE](LICENSE). Repository privacy and license rights are separate. The Replamma mark is original; no affiliation with Ollama, Google, Adblock Plus or Malwarebytes is implied.
