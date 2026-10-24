@@ -67,10 +67,47 @@
       x.search === y.search
     );
   }
+  function variables(flow) {
+    const names = new Set();
+    for (const step of flow.steps) {
+      if (typeof step.value !== 'string') continue;
+      for (const match of step.value.matchAll(
+        /\{\{([a-zA-Z][a-zA-Z0-9_]{0,39})\}\}/g,
+      ))
+        names.add(match[1]);
+    }
+    if (names.size > 20) throw new Error('Use at most 20 input variables.');
+    return [...names];
+  }
+  function resolveVariables(flow, values) {
+    const result = validate(flow);
+    for (const name of variables(result)) {
+      if (
+        !Object.hasOwn(values, name) ||
+        typeof values[name] !== 'string' ||
+        !values[name].length
+      )
+        throw new Error(`Enter a value for ${name}.`);
+    }
+    result.steps = result.steps.map((step) =>
+      typeof step.value !== 'string'
+        ? step
+        : {
+            ...step,
+            value: step.value.replace(
+              /\{\{([a-zA-Z][a-zA-Z0-9_]{0,39})\}\}/g,
+              (_, name) => values[name],
+            ),
+          },
+    );
+    return validate(result);
+  }
   globalThis.ReplayCore = Object.freeze({
     validate,
     samePage,
     webUrl,
     MAX_STEPS,
+    variables,
+    resolveVariables,
   });
 })();

@@ -3,110 +3,179 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Replay · Workflow studio</title>
+    <title>Replamma</title>
     <link rel="stylesheet" href="panel.css" />
   </head>
   <body>
-    <header>
-      <a class="brand" href="#" aria-label="Replay home"
-        ><span class="logo">↻</span> replay<span class="badge"
-          >EARLY ACCESS</span
-        ></a
-      ><span class="local"><i></i> Local only</span>
-    </header>
-    <main>
-      <section class="intro">
-        <p class="eyebrow">YOUR BROWSER, ON REPEAT</p>
-        <h1>Do it once.<br /><span>Make it a workflow.</span></h1>
-        <p>Turn the clicks you repeat into steps you control.</p>
-      </section>
-      <div class="toolbar">
-        <button id="new" class="primary">＋ New workflow</button
-        ><button id="import">Import JSON</button
-        ><input id="file" type="file" accept="application/json,.json" hidden />
+    <header class="app-header">
+      <div class="brand">
+        <img src="icons/mark.svg" width="34" height="38" alt="" /><span
+          >Replamma</span
+        >
       </div>
-      <label class="field"
-        >Your workflows<select id="library">
-          <option value="">Unsaved workflow</option>
-        </select></label
-      >
-      <section class="workspace" aria-label="Workflow editor">
-        <div class="workspace-head">
-          <span class="eyebrow">WORKFLOW STUDIO</span
-          ><span id="count" class="muted">0 steps</span>
-        </div>
-        <label class="field"
-          >Name<input
-            id="name"
-            maxlength="100"
-            value="My first workflow"
-            placeholder="e.g. Weekly report"
-        /></label>
-        <label class="field"
-          >Starting URL<input
-            id="url"
-            type="url"
-            placeholder="Set automatically when recording"
-        /></label>
-        <div class="controls">
-          <button id="record" class="record" aria-label="Record page">
-            ● Record page</button
-          ><button id="stop" aria-label="Stop" disabled>■ Stop</button>
-        </div>
-        <p class="hint">
-          Open a website and click Replay’s toolbar icon first. Record within
-          one page; keep this panel open.
-        </p>
-        <div id="status" role="status" aria-live="polite">
-          Ready when you are.
-        </div>
-        <section id="approval" hidden aria-label="Click approval">
-          <p class="eyebrow">YOUR APPROVAL NEEDED</p>
-          <p id="approval-text"></p>
-          <code id="approval-selector"></code
-          ><button id="approve" class="primary">Approve this click</button>
+      <span class="privacy-label"><i></i>On this device</span>
+    </header>
+    <nav class="tabs" aria-label="Main navigation">
+      <button id="tab-workflows" class="tab active" aria-current="page">
+        Workflows</button
+      ><button id="tab-history" class="tab">Activity</button
+      ><button id="tab-settings" class="tab">Settings</button>
+    </nav>
+    <main>
+      <section id="view-workflows">
+        <section class="library-section" aria-label="Saved workflows">
+          <div class="section-title">
+            <h1>Your workflows</h1>
+            <button id="new" class="small primary">New workflow</button>
+          </div>
+          <label class="search-box"
+            ><svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10.5" cy="10.5" r="6.5" />
+              <path d="m16 16 4 4" /></svg
+            ><input
+              id="search"
+              type="search"
+              aria-label="Search workflows"
+              placeholder="Search workflows"
+          /></label>
+          <div id="library"></div>
         </section>
-        <ol id="steps"></ol>
-        <div id="empty">
-          <div class="empty-icon">↗</div>
-          <h2>A little repetition.<br />A lot of time back.</h2>
+        <section class="workspace" aria-label="Workflow editor">
+          <div class="editor-heading">
+            <span class="section-label">Workflow details</span
+            ><span id="saved-state">Not saved</span>
+          </div>
+          <label class="field"
+            >Name<input
+              id="name"
+              maxlength="100"
+              value="Untitled workflow"
+              placeholder="Name this workflow"
+          /></label>
+          <details class="page-details">
+            <summary>Starting page <span id="page-host">Not set</span></summary>
+            <label class="field"
+              >Starting URL<input
+                id="url"
+                type="url"
+                placeholder="Captured when recording"
+            /></label>
+            <p class="help-text">
+              Open this page and click the Replamma toolbar icon before
+              recording or running.
+            </p>
+          </details>
+          <div class="record-toolbar">
+            <button id="record" class="record" aria-label="Record page">
+              <i></i>Record</button
+            ><button id="stop" aria-label="Stop" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="6" y="6" width="12" height="12" rx="1" /></svg
+              >Stop</button
+            ><span id="count">0 steps</span>
+          </div>
+          <div id="status" role="status" aria-live="polite">
+            Ready to record.
+          </div>
+          <section id="approval" hidden aria-label="Click approval">
+            <strong>Review this click</strong>
+            <p id="approval-text"></p>
+            <details>
+              <summary>Target details</summary>
+              <code id="approval-selector"></code>
+            </details>
+            <button id="approve" class="primary">Approve this click</button>
+          </section>
+          <ol id="steps"></ol>
+          <div id="empty">
+            <svg viewBox="0 0 48 48" aria-hidden="true">
+              <rect x="8" y="8" width="32" height="32" rx="5" />
+              <path d="M16 18h16M16 24h10M16 30h13" />
+            </svg>
+            <h2>No steps yet</h2>
+            <p>
+              Press Record, then use the page normally.<br />Stop when your task
+              is finished.
+            </p>
+          </div>
+          <button id="wait" class="add-step">Add a wait step</button>
+          <section id="variables" hidden>
+            <div class="section-title">
+              <h2>Inputs for this run</h2>
+              <span class="subtle">Not saved</span>
+            </div>
+            <div id="variable-fields"></div>
+            <p class="help-text">
+              Use <code>{{name}}</code> in a step value to ask for a fresh value
+              each time.
+            </p>
+          </section>
+          <div class="editor-actions">
+            <button id="save" class="primary">Save workflow</button
+            ><button id="duplicate">Duplicate</button
+            ><button id="export">Export</button
+            ><button id="delete" class="danger">Delete</button>
+          </div>
+          <div class="run-actions">
+            <span
+              ><strong>Run this workflow</strong
+              ><small>Each click needs your approval.</small></span
+            ><button id="run" class="primary" aria-label="Run">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m8 5 11 7-11 7Z" /></svg
+              >Run
+            </button>
+          </div>
+        </section>
+        <p class="page-note">Single-page workflows. You stay in control.</p>
+      </section>
+      <section id="view-history" hidden>
+        <div class="section-title">
+          <h1>Activity</h1>
+          <button id="clear-history" class="small">Clear history</button>
+        </div>
+        <p class="section-description">
+          Recent runs on this device. Input values are never included.
+        </p>
+        <ol id="history-list"></ol>
+      </section>
+      <section id="view-settings" hidden>
+        <h1>Settings</h1>
+        <section class="settings-group">
+          <h2>Workflow files</h2>
           <p>
-            Record a few clicks, fill a field, choose an option.<br />Your steps
-            will appear here.
+            Bring in a workflow you trust. Review its steps before running it.
           </p>
-        </div>
-        <button id="wait" class="text-button">＋ Add a wait step</button>
-        <div class="footer-actions">
-          <button id="save">Save workflow</button
-          ><button id="export">Export</button
-          ><button id="delete" class="danger">Delete</button>
-        </div>
+          <button id="import">Import JSON</button
+          ><input
+            id="file"
+            type="file"
+            accept="application/json,.json"
+            hidden
+          />
+        </section>
+        <section class="settings-group">
+          <h2>Privacy</h2>
+          <p>
+            Workflows stay in your browser profile. No account, analytics or
+            cloud service.
+          </p>
+          <p>
+            Recognizable sensitive fields are skipped. Other fields and URLs may
+            contain private information. Review files before sharing.
+          </p>
+        </section>
+        <section class="settings-group">
+          <h2>About Replamma</h2>
+          <p>Version 0.2.0 · Desktop Chrome 116+</p>
+          <p>
+            Currently supports one page and its main document. Navigation,
+            iframes, shadow DOM and uploads are not supported.
+          </p>
+        </section>
       </section>
-      <section class="run-bar">
-        <div>
-          <strong>Ready to replay?</strong>
-          <p>Every click waits for your approval.</p>
-        </div>
-        <button id="run" class="primary" aria-label="Run">▶ Run</button>
-      </section>
-      <details>
-        <summary>Privacy & current limits</summary>
-        <p>
-          No account, analytics or network service. Workflows stay in this
-          browser profile. Passwords and recognizable sensitive fields are
-          skipped, but ordinary inputs and page URLs can contain personal
-          information. Review before saving or sharing.
-        </p>
-        <p>
-          Version 0.1 supports the top-level document on one HTTP(S) page.
-          Navigation, iframes, shadow DOM, file uploads, loops and AI editing
-          are not supported yet. Keep this panel open: recording expires after
-          two seconds without a panel heartbeat. Closing the panel interrupts
-          playback.
-        </p>
-      </details>
     </main>
-    <footer>BUILT FOR THE BORING PARTS. <span>Replay / 0.1.0</span></footer>
+    <footer><span>Replamma</span><span>0.2.0</span></footer>
     <script src="core.js"></script>
     <script type="module" src="panel.js"></script>
   </body>

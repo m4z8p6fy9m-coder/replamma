@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Replay — Browser workflows",
-  "description": "Record, edit and replay browser workflows. Local storage. No account. You approve every click.",
-  "version": "0.1.0",
+  "name": "Replamma",
+  "description": "Record browser tasks, choose targets visually and run workflows with fresh inputs. Local storage. Approval before every click.",
+  "version": "0.2.0",
   "minimum_chrome_version": "116",
   "icons": {
     "16": "icons/16.png",
@@ -11,9 +11,15 @@
     "128": "icons/128.png"
   },
   "permissions": ["activeTab", "scripting", "storage", "sidePanel"],
-  "background": { "service_worker": "background.js" },
-  "action": { "default_title": "Open Replay" },
-  "side_panel": { "default_path": "panel.html" },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Open Replamma"
+  },
+  "side_panel": {
+    "default_path": "panel.html"
+  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'none'"
   }

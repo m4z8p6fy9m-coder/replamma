@@ -7,6 +7,8 @@
     session = '',
     runEpoch = 0,
     heartbeat = 0;
+  let cancelPicker = () => {},
+    pickResult = null;
   const sensitive = (element) => {
     const meta = [
       element.type,
@@ -105,12 +107,86 @@
   document.addEventListener('click', capture, true);
   document.addEventListener('input', capture, true);
   document.addEventListener('change', capture, true);
-  async function execute(step) {
+  function startPicker() {
+    cancelPicker();
+    recording = false;
+    pickResult = null;
+    const overlay = document.createElement('div');
+    const shadow = overlay.attachShadow({ mode: 'closed' });
+    const box = document.createElement('div');
+    const note = document.createElement('div');
+    const style = document.createElement('style');
+    style.textContent =
+      ':host{all:initial!important;position:fixed!important;inset:0!important;z-index:2147483647!important;pointer-events:none!important}div{box-sizing:border-box}#box{position:fixed;border:2px solid #116b66;background:#116b6614;border-radius:3px}#note{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);font:13px system-ui;background:#183b39;color:white;padding:10px 16px;border-radius:5px;white-space:nowrap}';
+    box.id = 'box';
+    note.id = 'note';
+    note.textContent = 'Replamma: click a target · Esc to cancel';
+    shadow.append(style, box, note);
+    document.documentElement.append(overlay);
+    const clean = () => {
+      clearTimeout(timeout);
+      document.removeEventListener('pointermove', move, true);
+      document.removeEventListener('click', click, true);
+      document.removeEventListener('keydown', key, true);
+      overlay.remove();
+      cancelPicker = () => {};
+    };
+    const move = (event) => {
+      const rect = event.target.getBoundingClientRect();
+      Object.assign(box.style, {
+        left: rect.left + 'px',
+        top: rect.top + 'px',
+        width: rect.width + 'px',
+        height: rect.height + 'px',
+      });
+    };
+    const click = (event) => {
+      if (!event.isTrusted) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const el = event.target;
+      if (sensitive(el)) {
+        note.textContent =
+          'This field is private. Choose another target or press Esc.';
+        return;
+      }
+      try {
+        pickResult = { selector: selector(el), label: label(el) };
+        clean();
+      } catch {
+        note.textContent =
+          'Could not identify this element. Choose another target.';
+      }
+    };
+    const key = (event) => {
+      if (!event.isTrusted) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        pickResult = { cancelled: true };
+        clean();
+      }
+    };
+    const timeout = setTimeout(() => {
+      pickResult = { cancelled: true };
+      clean();
+    }, 30000);
+    document.addEventListener('pointermove', move, true);
+    document.addEventListener('click', click, true);
+    document.addEventListener('keydown', key, true);
+    cancelPicker = () => {
+      pickResult = { cancelled: true };
+      clean();
+    };
+  }
+  async function execute(step, expectedUrl = location.href) {
     const epoch = runEpoch;
     const deadline = Date.now() + 5000;
     let el;
     do {
       if (epoch !== runEpoch) throw new Error('Run stopped.');
+      if (!ReplayCore.samePage(expectedUrl, location.href))
+        throw new Error('Page changed while waiting for the target.');
       const matches = document.querySelectorAll(step.selector);
       if (matches.length > 1)
         throw new Error('Selector matches multiple elements. Edit this step.');
@@ -120,7 +196,7 @@
     } while (Date.now() < deadline);
     if (!el) throw new Error('Element not found within 5 seconds.');
     if (sensitive(el))
-      throw new Error('Replay refuses sensitive or private fields.');
+      throw new Error('Replamma refuses sensitive or private fields.');
     if (el.disabled || !el.getClientRects().length)
       throw new Error('Element is disabled or hidden.');
     el.scrollIntoView({ block: 'center', behavior: 'instant' });
@@ -179,9 +255,15 @@
           recording = false;
           return { steps, url: startUrl, session };
         case 'CANCEL':
+          cancelPicker();
           runEpoch++;
           recording = false;
           return {};
+        case 'PICK_START':
+          startPicker();
+          return {};
+        case 'PICK_POLL':
+          return { result: pickResult };
         case 'EXECUTE': {
           if (!ReplayCore.samePage(message.url, location.href))
             throw new Error(
@@ -195,7 +277,7 @@
           });
           if (flow.steps[0].type === 'wait')
             throw new Error('Wait steps run in the panel.');
-          await execute(flow.steps[0]);
+          await execute(flow.steps[0], message.url);
           return {};
         }
         default:
