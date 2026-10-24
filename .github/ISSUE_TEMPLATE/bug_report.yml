@@ -1,0 +1,25 @@
+name: Bug report
+description: Report a reproducible issue using synthetic data.
+body:
+  - type: markdown
+    attributes:
+      value: Do not attach credentials, personal data, or private recordings. Follow SECURITY.md for vulnerabilities.
+  - type: input
+    id: version
+    attributes:
+      label: Replay and Chrome versions
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Prefer the included local playground.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
