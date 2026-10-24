@@ -54,10 +54,10 @@ try {
   await demo.locator('#format').press('ArrowDown');
   await demo.locator('#format').press('Enter');
   await demo
-    .getByLabel('Password (Replay must skip this)', { exact: true })
+    .getByLabel('Password (Replamma must skip this)', { exact: true })
     .fill('never-store-this');
   await demo
-    .getByLabel('Private note (Replay must skip this)', { exact: true })
+    .getByLabel('Private note (Replamma must skip this)', { exact: true })
     .fill('never-store-this-either');
   await demo.getByRole('button', { name: 'Create report' }).click();
   await panel.getByRole('button', { name: 'Stop', exact: true }).click();
@@ -131,15 +131,113 @@ try {
   const download = await downloaded;
   const exported = JSON.parse(await readFile(await download.path(), 'utf8'));
   assert.equal(exported.steps.length, 3);
+  assert.equal(
+    await panel.evaluate(() => getComputedStyle(document.body).userSelect),
+    'none',
+  );
+  assert.equal(
+    await panel
+      .getByLabel('Name', { exact: true })
+      .evaluate((el) => getComputedStyle(el).userSelect),
+    'text',
+  );
   await panel.reload();
   await panel.locator('#steps > li').first().waitFor();
   assert.equal(await panel.locator('#steps > li').count(), 3);
+  // Parameterized input values are resolved only for this run.
+  await panel
+    .getByLabel('Value for step 1', { exact: true })
+    .fill('{{report}}');
+  await panel
+    .getByLabel('Run input report', { exact: true })
+    .fill('Parameterized report');
+  await demo.reload();
+  await demo.bringToFront();
+  await panel.getByRole('button', { name: 'Run', exact: true }).click();
+  await panel
+    .getByRole('button', { name: 'Approve this click', exact: true })
+    .waitFor();
+  assert.equal(
+    await demo.locator('#report-name').inputValue(),
+    'Parameterized report',
+  );
+  await panel
+    .getByRole('button', { name: 'Approve this click', exact: true })
+    .click();
+  await panel
+    .getByRole('status')
+    .filter({ hasText: 'Workflow completed.' })
+    .waitFor();
+  await panel.getByRole('button', { name: 'Activity', exact: true }).click();
+  await panel.locator('.history-item').first().waitFor();
+  assert.match(await panel.locator('#history-list').textContent(), /completed/);
+  const activity = await panel.evaluate(() =>
+    chrome.storage.local.get('runHistory'),
+  );
+  assert.ok(!JSON.stringify(activity).includes('Parameterized report'));
+  await panel.getByRole('button', { name: 'Workflows', exact: true }).click();
+  // Selecting a replacement target must intercept the click, not submit it.
+  await panel.locator('.step-details').first().locator('summary').click();
+  await panel
+    .getByRole('button', { name: 'Choose target for step 1', exact: true })
+    .click();
+  await panel
+    .getByRole('status')
+    .filter({ hasText: 'Click an element on the page' })
+    .waitFor();
+  await demo.locator('#report-name').click();
+  await panel
+    .getByRole('status')
+    .filter({ hasText: 'Target updated.' })
+    .waitFor();
+  await panel
+    .getByLabel('Value for step 1', { exact: true })
+    .fill('Weekly overview');
+  await panel
+    .getByRole('button', { name: 'Save workflow', exact: true })
+    .click();
+  await panel
+    .getByRole('status')
+    .filter({ hasText: 'Saved in this browser profile.' })
+    .waitFor();
+  await panel.getByRole('button', { name: 'Duplicate', exact: true }).click();
+  await panel
+    .getByRole('button', { name: 'Save workflow', exact: true })
+    .click();
+  await panel
+    .getByRole('status')
+    .filter({ hasText: 'Saved in this browser profile.' })
+    .waitFor();
+  await panel
+    .getByRole('searchbox', { name: 'Search workflows', exact: true })
+    .fill('not-a-match');
+  assert.equal(await panel.locator('.workflow-item').count(), 0);
+  await panel
+    .getByRole('searchbox', { name: 'Search workflows', exact: true })
+    .fill('');
+  assert.equal(await panel.locator('.workflow-item').count(), 2);
+  await panel.getByLabel('Name', { exact: true }).click();
+  assert.notEqual(
+    await panel
+      .getByRole('button', { name: 'Remove step 1', exact: true })
+      .locator('path')
+      .evaluate((el) => getComputedStyle(el).stroke),
+    'none',
+  );
+  await panel.setViewportSize({ width: 320, height: 900 });
+  assert.equal(
+    await panel.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+    true,
+  );
+  await panel.setViewportSize({ width: 440, height: 1100 });
   await mkdir('test-results', { recursive: true });
   await panel.screenshot({ path: 'test-results/studio.png', fullPage: true });
   await cp('test-results/studio.png', 'docs/studio.png');
   assert.deepEqual(errors, []);
   console.log(
-    'PASS: trusted recording, private fields, replay, click approval, cancellation, local persistence, export and screenshot.',
+    'PASS: recording, private fields, playback, approval, cancellation, persistence, export, variables, history, target picker, duplication, search and text selection rules.',
   );
 } finally {
   await context?.close();
