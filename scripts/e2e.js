@@ -73,9 +73,7 @@ try {
   assert.ok(
     !(await panel.locator('#steps').textContent()).includes('never-store'),
   );
-  await panel
-    .getByRole('button', { name: 'Save workflow', exact: true })
-    .click();
+  await panel.getByLabel('Name', { exact: true }).press('Control+s');
   await panel
     .getByRole('status')
     .filter({ hasText: 'Saved in this browser profile.' })
