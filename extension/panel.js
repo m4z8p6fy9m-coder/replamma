@@ -683,6 +683,18 @@ document.addEventListener('copy', (event) => {
   if (!document.activeElement?.matches('input,textarea'))
     event.preventDefault();
 });
+document.addEventListener('keydown', (event) => {
+  if (
+    !(event.ctrlKey || event.metaKey) ||
+    event.altKey ||
+    event.shiftKey ||
+    event.key.toLowerCase() !== 's' ||
+    $('view-workflows').hidden
+  )
+    return;
+  event.preventDefault();
+  if (!event.repeat && !$('save').disabled) $('save').click();
+});
 try {
   const stored = await chrome.storage.local.get([
     'workflows',
