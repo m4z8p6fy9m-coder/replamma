@@ -1,24 +1,27 @@
 # Roadmap
 
-The order below expresses priorities, not commitments or release dates.
+Priorities, not promised dates.
 
-## Shipped: 0.1
+## Shipped in 0.2
 
-Single-page recording, a local library, step editing, sequential replay, per-click approval, cancellation, JSON portability, a playground, and automated tests.
+- Compact light interface with Workflows, Activity and Settings.
+- Searchable library and workflow duplication.
+- Visual target replacement with a temporary page highlight.
+- Per-run input variables without saving resolved values.
+- A bounded, clearable local run history.
+- Original Replamma llama mark and toolbar icons.
 
-## Next: reliability
+Version 0.1 recording, editing, approval, cancellation and JSON portability remain available. Existing workflows stay compatible.
 
-- More semantic selectors and useful target previews.
-- Richer recording recovery after page navigation and panel suspension.
-- Better support for common framework-controlled form widgets.
-- Variables and user-supplied values at run time.
-- Accessibility and manual browser compatibility reviews.
+## Reliability next
 
-## Later: broader workflows
+- More semantic selectors and better diagnostics for changed pages.
+- Recovery across page navigation and browser suspension.
+- Assertions and support for more common form widgets.
+- Broader manual accessibility and browser compatibility reviews.
 
-- Multi-page state machine with explicit, scoped permissions.
-- Assertions, data extraction, and CSV output.
-- Safe loops with a visible iteration budget.
-- Optional natural-language editing through a user-selected model provider, with a visible diff and no automatic execution.
+## Later
 
-No AI API key is requested or stored by the current release. AI editing, scheduling, cloud runs, and autonomous browsing are not implemented.
+Multi-page execution needs a persistent state machine and an explicit permission model. Extraction, CSV output and bounded loops need their own reviewable data flow. Optional model-assisted editing would require a visible change preview and separate approval before execution.
+
+No model key, scheduling or autonomous browsing is implemented.

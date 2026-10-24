@@ -37,3 +37,9 @@ Selectors must be nonempty strings no longer than 2000 characters. Values must b
 ```
 
 Use stable attributes wherever possible. A selector that matches several elements is an error, even if one element is hidden. Fix the selector instead of relying on DOM order. Workflow export is plain JSON; it is not encrypted and should never be treated as a secret container.
+
+## Input variables
+
+Input and select values can contain placeholders such as `{{report}}`. Names begin with an ASCII letter and contain up to 40 letters, digits or underscores. A workflow may request at most 20 distinct variables. Before a run, the panel asks for a nonempty value for every variable. Replacements are literal and happen once; a supplied value cannot introduce a second round of placeholder expansion. The expanded plan is validated against the same value-length limits.
+
+Variables cannot change the URL, selector, action type or label. Resolved values are never written back into the saved workflow or activity log. Old version-1 workflow JSON remains compatible.

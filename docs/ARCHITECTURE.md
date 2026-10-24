@@ -28,3 +28,13 @@ Selectors prefer unique `data-testid`, `id`, `name`, and `aria-label` attributes
 - Synthetic events are rejected by some sites; trusted-event emulation is not attempted.
 - Approval covers clicks only. Input changes may trigger site behavior immediately.
 - Multi-page orchestration needs a persistent state machine and a clear permission model before implementation.
+
+## Replamma 0.2
+
+The Workflows view uses a searchable button list. Advanced target details remain collapsed until needed. `ui.js` renders a small, fixed SVG icon vocabulary; no remote icon library is loaded.
+
+Input variables use the existing version-1 value strings. The panel extracts bounded placeholder names, requires a fresh nonempty value, resolves one literal substitution pass, and validates the resulting immutable run plan again. It never writes the resolved plan to workflow or history storage.
+
+Visual target selection injects a temporary closed-shadow-root overlay. It listens for trusted input, blocks the selected click, excludes sensitive fields, and returns only a selector and label. Escape, Stop and a 30-second deadline remove its listeners and overlay. The panel uses the same bound tab ID throughout selection. A page change aborts target lookup before action execution.
+
+Activity stores at most 50 metadata-only outcomes. Stored items include workflow name, start time, result, total/completed counts and elapsed time; resolved inputs, URLs and errors are excluded. The queue serializes activity writes after completed, failed and cancelled runs.
