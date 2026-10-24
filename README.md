@@ -20,6 +20,8 @@ This repository is public and distributed under the MIT license. The previously 
 
 Replamma supports the main document on a single page. Keep the side panel open during recording and playback. Reload the extension and the target page after an update. Chrome may assign a new extension ID when loading from a different directory; export important workflows before switching directories.
 
+While editing a workflow, press **Ctrl+S** (or **⌘S** on macOS) to save. The shortcut is inactive during recording, playback and target selection.
+
 ## Interface
 
 <img src="docs/studio.png" width="440" alt="Replamma workflow editor">

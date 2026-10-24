@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added Ctrl+S / Command+S to save the current workflow from the editor, with a tooltip and accessible shortcut metadata. Saving stays disabled during active operations.
+
 ## 0.2.0 — 2026-10-24
 
 - Renamed the product to Replamma with an original llama mark and matching toolbar icons.
