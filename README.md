@@ -6,7 +6,7 @@ A local browser workflow recorder for desktop Chrome. Record a task, review its 
 
 **Version 0.2.0 · Chrome 116+ · No account or backend**
 
-This repository is access-restricted. The previously released Replay 0.1 code remains part of its history. Existing workflow JSON and local workflow storage remain compatible.
+This repository is public and distributed under the MIT license. The previously released Replay 0.1 code remains part of its history. Existing workflow JSON and local workflow storage remain compatible.
 
 ## Install
 
